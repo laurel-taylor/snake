@@ -1,9 +1,23 @@
 <html>
     <head>
+        <style>
+            .selected {
+                background-color: lightblue;
+            }
+            .difficulty {
+                text-align: center;
+            }
+        </style>
     </head>
     <body>
         <div style="text-align: center;">
-            Snake <p id="score">0</p>
+            Snake
+            <p class="difficulty">
+                <button id="difficultyEasy" class="" onClick="setDifficulty('easy')">Easy</button>
+                <button id="difficultyNormal" class="selected" onClick="setDifficulty('normal')">Normal</button>
+                <button id="difficultyHard" class="" onClick="setDifficulty('hard')">Hard</button>
+            </p>
+            <p id="score">0</p>
         </div>
         <div style="text-align: center;">
             <table style="margin: 0 auto;" id="grid">
@@ -18,17 +32,46 @@
             Win game
         */
 
-        var height = 20;
-        var width = 20;
+        let difficulty = 100;
+        let height = 20;
+        let width = 20;
         const moveEvery = 1000;
         const grid = [];
         const emptyCells = [];
-        var play = false;
-        var score = 0;
-        var nextDirection = 'down';
+        let play = false;
+        let score = 0;
+        let nextDirection = 'down';
+        let interval;
 
         const get = (coord) => {
             return document.getElementById(`${coord[0]},${coord[1]}`);
+        }
+
+        const getElement = (id) => {
+            return document.getElementById(id);
+        }
+
+        const setDifficulty = (diff) => {
+            getElement('difficultyEasy').classList.remove('selected');
+            getElement('difficultyNormal').classList.remove('selected');
+            getElement('difficultyHard').classList.remove('selected');
+
+            switch (diff) {
+                case 'easy':
+                    difficulty = 300;
+                    getElement('difficultyEasy').classList.add('selected');
+                    break;
+                case 'normal':
+                    difficulty = 100;
+                    getElement('difficultyNormal').classList.add('selected');
+                    break;
+                case 'hard':
+                    difficulty = 50;
+                    getElement('difficultyHard').classList.add('selected');
+                    break;
+            }
+
+            resetGame(true);
         }
 
         class Snake {
@@ -64,13 +107,13 @@
 
 
         // Build grid
-        for (var row = 0; row < height; row++) {
-            var table = document.getElementById("grid");
+        for (let row = 0; row < height; row++) {
+            let table = document.getElementById("grid");
             const newRow = table.insertRow()
             newRow.id = row;
             grid[row] = [];
             emptyCells[row] = [];
-            for (var col = 0; col < width; col++) {
+            for (let col = 0; col < width; col++) {
                 const cell = newRow.insertCell();
                 cell.id = `${row},${col}`;
                 cell.classList.add("cell");
@@ -91,7 +134,7 @@
             }
         }
 
-        var snake;
+        let snake;
 
         const addRandomFruit = () => {
             const emptyCells = getEmptySpaces();
@@ -103,8 +146,8 @@
 
         const getEmptySpaces = () => {
             const emptySpaces = [];
-            for (var row = 0; row < height; row++) {
-                for (var col = 0; col < width; col++) {
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
                     const cell = grid[row][col];
                     const classList = cell.classList;
                     if (!classList.contains('snake') && !classList.contains('fruit')) {
@@ -120,10 +163,10 @@
             document.getElementById("score").textContent = score;
         }
 
-        const resetGame = () => {
+        const resetGame = (resetInterval = false) => {
             setScore(0);
-            for (var row = 0; row < height; row++) {
-                for (var col = 0; col < width; col++) {
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
                     const cell = get([row, col]);
                     cell.classList.remove('fruit');
                     cell.classList.remove('snake');
@@ -138,26 +181,27 @@
             snake.addHead(get([5, 9]));
 
             addRandomFruit();
+
+            if (resetInterval) {
+                clearInterval(interval);
+                interval = setInterval(advanceSnake, difficulty);
+            }
         }
 
-
-
         resetGame();
-
-
 
         const keyToDirection = {
             "ArrowUp": "up",
             "ArrowDown": "down",
             "ArrowLeft": "left",
-            "ArrowRight": "right", 
+            "ArrowRight": "right",
         }
 
         document.addEventListener("keydown", function(event) {
             const pressedKey = event.key;
             if (event.code == 'Space') {
                 play = false;
-                return; 
+                return;
             }
 
             if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(pressedKey)) {
@@ -194,17 +238,16 @@
                 }
         };
 
-        setInterval(advanceSnake, 100);
+        interval = setInterval(advanceSnake, difficulty);
 
-
-        var getNextCell = (snake) => {
+        let getNextCell = (snake) => {
             const snakeHead = snake.getHead();
             if (snakeHead == undefined) {
                 return undefined;
             }
 
-            var row = snakeHead.id.split(',')[0]
-            var col = snakeHead.id.split(',')[1]
+            let row = snakeHead.id.split(',')[0]
+            let col = snakeHead.id.split(',')[1]
 
             switch (snake.direction) {
                 case "up":
@@ -278,7 +321,7 @@
             background-image: url('Guster.jpg');
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;            
+            background-repeat: no-repeat;
             /* background-color: red; */
         }
         .snake {
